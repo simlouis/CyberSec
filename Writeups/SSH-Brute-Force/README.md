@@ -22,7 +22,7 @@ Open the Metasploit Framework console on the Kali host:
 msfconsole
 ```
 
-![MS3 CLI](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135404.png)
+![MS3 CLI](screenshots/Pasted image 20260623135404.png)
 
 
 Once inside the console, load the SSH login scanner module and configure it as follows:

@@ -1,3 +1,4 @@
+# SSH Brute Force Attack Detection with Splunk
 
 **Lab Environment:** Kali Linux (Attacker) + Metasploitable 3 (Target) on an isolated host-only network
 **Focus:** Simulating an SSH brute force attack and building a tuned Splunk detection alert

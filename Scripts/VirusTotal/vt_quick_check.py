@@ -30,3 +30,12 @@ except FileNotFoundError:
 # Write out results to CSV file
 
 print(values)
+
+# TODO: 
+# Run against a file
+# Loop through list and run against VT
+# Output resutls into new file
+
+# TODO Future:
+# Run locally, drag and drop file in browser.
+# Output returned in same browser.

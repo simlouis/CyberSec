@@ -38,7 +38,7 @@ run
 
 This module iterates through the `rockyou.txt` wordlist, attempting to authenticate to the target's SSH service for the specified username. With `VERBOSE` enabled, each failed and successful attempt is printed to the console in real time.
 
-![Brute Force Attack](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135428.png)
+![Brute Force Attack](screenshots/Pasted_image_20260623135428.png)
 
 
 ---
@@ -53,7 +53,7 @@ index=* host=192.168.56.103 "Failed password"
 
 This surfaces all SSH authentication failure events from the target host.
 
-![SPL to find IP](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135449.png)
+![SPL to find IP](screenshots/Pasted_image_20260623135449.png)
 
 
 ---
@@ -62,7 +62,7 @@ This surfaces all SSH authentication failure events from the target host.
 
 Examining an individual event reveals that while Splunk does not automatically extract a `src_ip` field from sshd logs, the originating IP address and port are present within the raw event message (e.g., `from 192.168.56.101 port 39985`).
 
-![SPL Raw](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135528.png)
+![SPL Raw](screenshots/Pasted_image_20260623135528.png)
 
 
 To extract the source IP dynamically, use a `rex` command to parse the field inline:
@@ -75,7 +75,7 @@ index=* host=192.168.56.103 "Failed password"
 
 This groups failed login events by the extracted source IP, making it easy to identify which host is generating the most failures.
 
-![SPL stats](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135619.png)
+![SPL stats](screenshots/Pasted_image_20260623135619.png)
 
 > **Note on field extraction:** Rather than relying on `rex` in every query, a persistent field extraction can be configured in Splunk under **Settings → Fields → Field Extractions**. Creating a regex-based extraction for `src_ip` on the relevant sourcetype will make the field available natively across all searches and dashboards for future use.
 
@@ -111,12 +111,12 @@ The `| where count > 10` clause ensures the alert only fires when a single sourc
 
 Re-run the Metasploit module to validate the alert fires correctly. The initial test confirms detection is working, but may produce multiple alerts in rapid succession — one per search interval — once the threshold is exceeded.
 
-![Alert Flood](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135825.png)
+![Alert Flood](screenshots/Pasted_image_20260623135825.png)
 
 
 To suppress duplicate alerts while the attack is still ongoing, enable **Throttle** in the alert settings. Throttling suppresses re-notification for a configurable time window after the alert first fires, preventing alert fatigue without missing the initial detection.
 
-![Alert Threshold](Writeups/SSH-Brute-Force/screenshots/Pasted image 20260623135857.png)
+![Alert Threshold](screenshots/Pasted_image_20260623135857.png)
 
 
 **Recommended throttle period:** 60 minutes (adjust based on your environment's incident response SLA).

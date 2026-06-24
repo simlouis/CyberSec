@@ -11,7 +11,8 @@ import requests
 file_path = "C:/Projects/Scripts/VirusTotal/test.txt.txt"
 ips = []
 hashes = []
-results = []
+ip_results = []
+hash_results = []
 hash_types = {
     "MD5": re.compile(r"^[a-fA-F0-9]{32}$"),
     "SHA1": re.compile(r"^[a-fA-F0-9]{40}$"),
@@ -43,12 +44,13 @@ def parse_vt_json(resp):
     ]
 
     return {
-        "ip": data["data"]["id"],
+        "id": data["data"]["id"],
         "country": attrs.get("country"),
         "asn": attrs.get("asn"),
         "owner": attrs.get("as_owner"),
         "malicious": stats.get("malicious", 0),
         "suspicious": stats.get("suspicious", 0),
+        "harmless": stats.get("harmless", 0),
         "detections": detections
     }
 
@@ -89,20 +91,40 @@ if ips:
         response = requests.get(url, headers=headers)
         
         if response.status_code == 200:
-            results.append(parse_vt_json(response))
+            ip_results.append(parse_vt_json(response))
         else:
             print(f"Failed lookup for {ip}")
 
-    for r in results:
+    for r in ip_results:
         print(
-            f"IP: {r['ip']} | "
+            f"IP: {r['id']} | "
             f"Country: {r['country']} | "
-            f"Number of malicious detections: {r['malicious']} "
+            f"Malicious Count: {r['malicious']} | "
+            f"Suspicious Count: {r['suspicious']} | "
         )
 
 if hashes:
-    print(hashes)
-    print("Run Hashes against VT")
+    headers = {
+        "accept": "application/json",
+        "x-apikey": api_key
+        }
+    for h in hashes:
+        url = f"https://www.virustotal.com/api/v3/files/{h}"
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            hash_results.append(parse_vt_json(response))
+        else:
+            print(f"Failed lookup for {h}")
+
+    for r in hash_results:
+        print(
+            f"Hash: {r['id']} | "
+            f"Malicious Count: {r['malicious']} | "
+            f"Suspicious Count: {r['suspicious']} | "
+        )
+
+
 
 
 

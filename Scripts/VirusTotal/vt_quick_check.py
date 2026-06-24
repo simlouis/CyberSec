@@ -11,6 +11,7 @@ import requests
 file_path = "C:/Projects/Scripts/VirusTotal/test.txt.txt"
 ips = []
 hashes = []
+results = []
 hash_types = {
     "MD5": re.compile(r"^[a-fA-F0-9]{32}$"),
     "SHA1": re.compile(r"^[a-fA-F0-9]{40}$"),
@@ -28,6 +29,28 @@ def data_classify(v):
     for hash_type, pattern in hash_types.items():
         if pattern.match(v):
             return hash_type
+        
+
+def parse_vt_json(resp):
+    data = resp.json()
+    attrs = data["data"]["attributes"]
+    stats = attrs.get("last_analysis_stats", {})
+
+    detections = [
+        vendor
+        for vendor, result in attrs.get("last_analysis_results", {}).items()
+        if result.get("category") == "malicious"
+    ]
+
+    return {
+        "ip": data["data"]["id"],
+        "country": attrs.get("country"),
+        "asn": attrs.get("asn"),
+        "owner": attrs.get("as_owner"),
+        "malicious": stats.get("malicious", 0),
+        "suspicious": stats.get("suspicious", 0),
+        "detections": detections
+    }
 
 # Establish API connection
 load_dotenv()
@@ -57,8 +80,25 @@ except FileNotFoundError:
 # Write out results to CSV file
 
 if ips:
-    print(ips)
-    print("Run Ips against VT")
+    headers = {
+        "accept": "application/json",
+        "x-apikey": api_key
+        }
+    for ip in ips:
+        url = f"https://www.virustotal.com/api/v3/ip_addresses/{ip}"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            results.append(parse_vt_json(response))
+        else:
+            print(f"Failed lookup for {ip}")
+
+    for r in results:
+        print(
+            f"IP: {r['ip']} | "
+            f"Country: {r['country']} | "
+            f"Number of malicious detections: {r['malicious']} "
+        )
 
 if hashes:
     print(hashes)

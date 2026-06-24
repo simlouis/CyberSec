@@ -7,8 +7,12 @@ import sys
 import vt 
 import requests
 
+# Establish API connection
+load_dotenv()
+api_key = os.getenv("API_KEY")
+client = vt.Client(api_key)
+
 # Declare variables
-file_path = "C:/Projects/Scripts/VirusTotal/test.txt.txt"
 ips = []
 hashes = []
 ip_results = []
@@ -18,6 +22,8 @@ hash_types = {
     "SHA1": re.compile(r"^[a-fA-F0-9]{40}$"),
     "SHA256": re.compile(r"^[a-fA-F0-9]{64}$"),
 }
+session = requests.Session()
+session.headers.update({"accept": "application/json", "x-apikey": api_key})
 
 # Determines if input is an IP or a Hash
 def data_classify(v):
@@ -54,17 +60,12 @@ def parse_vt_json(resp):
         "detections": detections
     }
 
-# Establish API connection
-load_dotenv()
-api_key = os.getenv("API_KEY")
-client = vt.Client(api_key)
-
-# if len(sys.argv) < 2:
-#     print("Error: Please provide a file path.")
-#     sys.exit(1)
-
 # Get filename
-# file_path = sys.argv[1]
+if len(sys.argv) < 2:
+    print("Error: Please provide a file path.")
+    sys.exit(1)
+
+file_path = sys.argv[1]
 
 # Read File
 try:
@@ -82,13 +83,9 @@ except FileNotFoundError:
 # Write out results to CSV file
 
 if ips:
-    headers = {
-        "accept": "application/json",
-        "x-apikey": api_key
-        }
     for ip in ips:
         url = f"https://www.virustotal.com/api/v3/ip_addresses/{ip}"
-        response = requests.get(url, headers=headers)
+        response = session.get(url)
         
         if response.status_code == 200:
             ip_results.append(parse_vt_json(response))
@@ -104,13 +101,9 @@ if ips:
         )
 
 if hashes:
-    headers = {
-        "accept": "application/json",
-        "x-apikey": api_key
-        }
     for h in hashes:
         url = f"https://www.virustotal.com/api/v3/files/{h}"
-        response = requests.get(url, headers=headers)
+        response = session.get(url)
 
         if response.status_code == 200:
             hash_results.append(parse_vt_json(response))
@@ -124,12 +117,7 @@ if hashes:
             f"Suspicious Count: {r['suspicious']} | "
         )
 
-
-
-
-
 # TODO: 
-# Loop through list and run against VT
 # Output resutls into new file
 
 # TODO Future:

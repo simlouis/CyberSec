@@ -9,5 +9,6 @@ CyberSec/
 │   ├── SSH-Brute-Force/
 |   ├── Macroni-BTLO/
 ├── Scripts/
+|   ├── VirusTotal/
 ├── Notes/
 └── Tools/
